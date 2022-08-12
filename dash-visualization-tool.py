@@ -45,8 +45,6 @@ pp.runpp(netLV)
 loading_values = netLV.res_line.loading_percent.values
 vlevels_pu = netLV.res_bus.vm_pu.values
 
-pplt.simple_plotly(netLV)
-
 ## DASHH
 
 # function to help generate the elements 
@@ -67,8 +65,8 @@ def generate_nodes(pandanet,vlevel,colorgradient):
         colorindex = classis*maxgran/gran
         colorindex = colorindex.astype(int)
         for node in pandanet.bus.index:
-            x_coord = int(pandanet.bus_geodata.x[node])
-            y_coord = int(pandanet.bus_geodata.y[node]) 
+            x_coord = int(pandanet.bus_geodata.x[node]*10) # !!! COORDINATES ARE x 10, 
+            y_coord = int(pandanet.bus_geodata.y[node]*10) 
             if node in ext_grid:
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid'})
             elif colorindex[node] < maxgran:
@@ -77,8 +75,8 @@ def generate_nodes(pandanet,vlevel,colorgradient):
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient[maxgran -1][1:]})
     else:
         for node in pandanet.bus.index:
-            x_coord = int(pandanet.bus_geodata.x[node])
-            y_coord = int(pandanet.bus_geodata.y[node])
+            x_coord = int(pandanet.bus_geodata.x[node]*10)
+            y_coord = int(pandanet.bus_geodata.y[node]*10)
             if node in ext_grid:
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid'})
             else:
@@ -86,11 +84,19 @@ def generate_nodes(pandanet,vlevel,colorgradient):
     return all_nodes
 
 def generate_edges(pandanet,Loading):
+
+    # closed_lines = netLV.switch[netLV.switch.closed == True].element.values.tolist()
+    open_lines = netLV.switch[netLV.switch.closed == False].element.values.tolist()
+    # lines_no_switch =  [x for x in netLV.line.index if x not in netLV.switch.element.values]
+    # closed_lines.append(lines_no_switch)
+
     all_edges =[]
     if Loading:
         for edge in pandanet.line.index:
             classish=''
-            if pandanet.res_line.loading_percent[edge] > 100:
+            if edge in open_lines:
+                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'line-open'})
+            elif pandanet.res_line.loading_percent[edge] > 100:
                 classish='line-overloaded'
             elif 50 < pandanet.res_line.loading_percent[edge]  <= 100:
                 classish='line-loaded-50-100'
@@ -102,7 +108,10 @@ def generate_edges(pandanet,Loading):
         return all_edges
     else:
         for edge in pandanet.line.index:
-            all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'line-black'})   
+            if edge in open_lines:
+                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'open-switch'})
+            else:
+                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'line-black'})
         return all_edges
 
 
@@ -139,7 +148,14 @@ def generate_stylesheet(bus_size,line_size):
                 {
                     'selector': '.line-black',
                     'style':{
-                        'line-color': 'black',
+                        'line-color': 'white',
+                        'width': line_size}
+                },
+                {
+                    'selector': '.open-switch',
+                    'style':{
+                        'line-color': 'purple',
+                        'line-style': 'dotted',
                         'width': line_size}
                 },
                 ]
@@ -168,7 +184,7 @@ def generate_stylesheet(bus_size,line_size):
     return all_styles
 
 ### application time
-app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH]) 
+app = Dash(__name__, external_stylesheets=[dbc.themes.SOLAR]) 
 
 app.layout = html.Div([
 
@@ -181,8 +197,8 @@ app.layout = html.Div([
                     cyto.Cytoscape(
                             id='net map',
                             autolock = True,
-                            minZoom = 0.1,
-                            maxZoom = 30,
+                            minZoom = 0.01,
+                            maxZoom = 100,
                             layout={'name': 'preset'},
                             style={'width': '100%', 'height': '500px'},
                             stylesheet = generate_stylesheet(6,0.5),
@@ -207,15 +223,15 @@ app.layout = html.Div([
                                     value = 'No',
                         ),
                                 
-                        dcc.Slider(0.5,20,
-                                    step =2.5,
-                                    value=5,
+                        dcc.Slider(1,50,
+                                    step =2,
+                                    value=25,
                                     id = 'bus-size-slider',
                         ),
                                 
-                        dcc.Slider(0.1,2,
-                                    step =0.2,
-                                    value=0.5,
+                        dcc.Slider(0.1,10,
+                                    step =1,
+                                    value=3,
                                     id = 'line-size-slider',
                         ),
                         

@@ -45,6 +45,7 @@ pp.runpp(netLV)
 loading_values = netLV.res_line.loading_percent.values
 vlevels_pu = netLV.res_bus.vm_pu.values
 
+pplt.simple_plotly(netLV)
 
 ## DASHH
 
@@ -93,8 +94,10 @@ def generate_edges(pandanet,Loading):
                 classish='line-overloaded'
             elif 50 < pandanet.res_line.loading_percent[edge]  <= 100:
                 classish='line-loaded-50-100'
-            else:
+            elif 0 < pandanet.res_line.loading_percent[edge]  <= 50:
                 classish='line-loaded-0-50'
+            else:
+                classish='line-black'
             all_edges.append({'data': {'label': str(edge), 'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': classish})
         return all_edges
     else:
@@ -154,7 +157,7 @@ def generate_stylesheet(bus_size,line_size):
     all_styles.append({
                     'selector': '.buswhite',
                     'style': {
-                        'background-color': 'blue',
+                        'background-color': '#98DEDE',
                         'width' : bus_size,
                         'height' : bus_size,
                         'border-width': 0.2,
@@ -165,52 +168,69 @@ def generate_stylesheet(bus_size,line_size):
     return all_styles
 
 ### application time
-app = Dash(__name__) #MORPH external_stylesheets=dbc.themes.VAPOR
+app = Dash(__name__, external_stylesheets=[dbc.themes.MORPH]) 
 
 app.layout = html.Div([
-    html.Div([
-    dcc.Markdown(children='# Visualization of Power Flow Results'),
-    cyto.Cytoscape(
-        id='net map',
-        autolock = True,
-        minZoom = 0.1,
-        maxZoom = 30,
-        layout={'name': 'preset'},
-        style={'width': '50%', 'height': '500px'},
-        stylesheet = generate_stylesheet(6,0.5),
-        elements=
-            generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = False)
-        ),
 
-    dcc.RadioItems(
-        id = 'displayloading',
-        options = ['Yes', 'No'],
-        value = 'No'
-        ),
-    
-
-    dcc.RadioItems(
-        id = 'buslevel',
-        options = ['Yes', 'No'],
-        value = 'No',
-        ),
-    
-    dcc.Slider(0.5,20,
-        step =0.5,
-        value=5,
-        id = 'bus-size-slider',
+        dbc.Row( dbc.Col (html.H3('Visualization of Power Flow Results'), width= {'size': 6 ,'offset': 4},)
         ),
         
-    dcc.Slider(0.1,2,
-        step =0.1,
-        value=0.5,
-        id = 'line-size-slider',
-        ),
-    html.P(id='hover-info-node'),
-    html.P(id='hover-info-line')
+        dbc.Row([
+            
+                dbc.Col(
+                    cyto.Cytoscape(
+                            id='net map',
+                            autolock = True,
+                            minZoom = 0.1,
+                            maxZoom = 30,
+                            layout={'name': 'preset'},
+                            style={'width': '100%', 'height': '500px'},
+                            stylesheet = generate_stylesheet(6,0.5),
+                            elements=generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = False))
+                        ,width = {'size':8, 'offset': 0, 'order': 1 }
+                        ),
+                
+                dbc.Col([
+                        html.P('Display loading percentage of lines:'),
+                        
+                        dcc.RadioItems(
+                                    id = 'displayloading',
+                                    options = ['Yes', 'No'],
+                                    value = 'No'
+                                    ),             
+                        
+                        html.P('Display voltage level of busses:'),
+                        
+                        dcc.RadioItems(
+                                    id = 'buslevel',
+                                    options = ['Yes', 'No'],
+                                    value = 'No',
+                        ),
+                                
+                        dcc.Slider(0.5,20,
+                                    step =2.5,
+                                    value=5,
+                                    id = 'bus-size-slider',
+                        ),
+                                
+                        dcc.Slider(0.1,2,
+                                    step =0.2,
+                                    value=0.5,
+                                    id = 'line-size-slider',
+                        ),
+                        
+                        html.P(id='hover-info-node'),
+                        
+                        html.P(id='hover-info-line'),
 
-    ],)
-],)
+                        ]
+                        ,width= {'size':4, 'offset': 0, 'order': 2 })
+        ]),
+            
+        
+
+    ])
+
 
 @app.callback( # callback naar elements (loading en vlevel)
     Output(component_id='net map',component_property= 'elements'),

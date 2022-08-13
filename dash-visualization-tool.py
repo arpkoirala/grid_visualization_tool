@@ -72,7 +72,7 @@ def generate_nodes(pandanet,vlevel,colorgradient):
             elif colorindex[node] < maxgran:
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient[colorindex[node]][1:]})  
             else:
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient[maxgran -1][1:]})
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient[maxgran -1][1:]})
     else:
         for node in pandanet.bus.index:
             x_coord = int(pandanet.bus_geodata.x[node]*10)
@@ -93,25 +93,25 @@ def generate_edges(pandanet,Loading):
     all_edges =[]
     if Loading:
         for edge in pandanet.line.index:
-            classish=''
+            edge_class=''
             if edge in open_lines:
-                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'line-open'})
+                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'open-switch'})
             elif pandanet.res_line.loading_percent[edge] > 100:
-                classish='line-overloaded'
+                edge_class='line-overloaded'
             elif 50 < pandanet.res_line.loading_percent[edge]  <= 100:
-                classish='line-loaded-50-100'
+                edge_class='line-loaded-50-100'
             elif 0 < pandanet.res_line.loading_percent[edge]  <= 50:
-                classish='line-loaded-0-50'
+                edge_class='line-loaded-0-50'
             else:
-                classish='line-black'
-            all_edges.append({'data': {'label': str(edge), 'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': classish})
+                edge_class='line-black'
+            all_edges.append({'data': {'label': str(edge), 'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': edge_class})
         return all_edges
     else:
         for edge in pandanet.line.index:
             if edge in open_lines:
-                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'open-switch'})
+                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'open-switch'})
             else:
-                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'classes': 'line-black'})
+                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'line-black'})
         return all_edges
 
 
@@ -123,7 +123,7 @@ def generate_stylesheet(bus_size,line_size):
                         'shape': 'diamond',
                         'height': bus_size,
                         'width' : bus_size,
-                        'border-width': 0.2,
+                        'border-width': bus_size*0.1,
                         'border-color': 'black',
                         }
                 },
@@ -148,7 +148,7 @@ def generate_stylesheet(bus_size,line_size):
                 {
                     'selector': '.line-black',
                     'style':{
-                        'line-color': 'white',
+                        'line-color': 'black',
                         'width': line_size}
                 },
                 {
@@ -166,7 +166,7 @@ def generate_stylesheet(bus_size,line_size):
                         'background-color': hexcode,
                         'width' : bus_size,
                         'height' : bus_size,
-                        'border-width': 0.2,
+                        'border-width': bus_size*0.1,
                         'border-color': 'black',
                         }
                 },)
@@ -176,15 +176,22 @@ def generate_stylesheet(bus_size,line_size):
                         'background-color': '#98DEDE',
                         'width' : bus_size,
                         'height' : bus_size,
-                        'border-width': 0.2,
+                        'border-width': bus_size*0.1,
                         'border-color': 'black',
+                        }
+                }),
+    all_styles.append({
+                    'selector': ':selected',
+                    'style': {
+                        'line-color': 'blue',
+                        'width': 3*line_size,
                         }
                 })
 
     return all_styles
 
 ### application time
-app = Dash(__name__, external_stylesheets=[dbc.themes.SOLAR]) 
+app = Dash(__name__, external_stylesheets=[dbc.themes.LUX]) 
 
 app.layout = html.Div([
 
@@ -197,6 +204,7 @@ app.layout = html.Div([
                     cyto.Cytoscape(
                             id='net map',
                             autolock = True,
+                            autounselectify = False,
                             minZoom = 0.01,
                             maxZoom = 100,
                             layout={'name': 'preset'},
@@ -229,15 +237,17 @@ app.layout = html.Div([
                                     id = 'bus-size-slider',
                         ),
                                 
-                        dcc.Slider(0.1,10,
+                        dcc.Slider(1,10,
                                     step =1,
-                                    value=3,
+                                    value=6,
                                     id = 'line-size-slider',
                         ),
                         
                         html.P(id='hover-info-node'),
                         
                         html.P(id='hover-info-line'),
+
+                        html.P(id='select-line'),
 
                         ]
                         ,width= {'size':4, 'offset': 0, 'order': 2 })
@@ -271,8 +281,9 @@ def map_style(radio_value_loading, radio_value_buscolor):
 def bus_sizer(bus, line):
     return generate_stylesheet(bus, line)
 
-@app.callback(Output('hover-info-node','children'),
-              Input('net map', 'mouseoverNodeData'))
+@app.callback(
+            Output('hover-info-node','children'),
+            Input('net map', 'mouseoverNodeData'))
 def displayTapNodeData(data):
     if data:
         bus_index_str = data['id']
@@ -284,7 +295,6 @@ def displayTapNodeData(data):
     Output('hover-info-line','children'),
     Input('net map', 'mouseoverEdgeData')
     )
-
 def displayTapEdgeData(data):
     if data:
         line_index_str = data['label']
@@ -292,5 +302,13 @@ def displayTapEdgeData(data):
         loading = round(loading_values[line_index],1)
         return "line " + line_index_str  + " - Loading: :" + str(loading) + "%"
 
+@app.callback(
+    Output('select-line','children'),
+    Input('net map', 'tapEdgeData')
+    )
+def displayTapEdgeData(data):
+    if data:
+        line_index_str = data['label']
+        return 'line selected: '+ line_index_str
 
 app.run_server(debug=True)

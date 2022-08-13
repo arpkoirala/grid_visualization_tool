@@ -83,7 +83,7 @@ def generate_nodes(pandanet,vlevel,colorgradient):
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'buswhite'})
     return all_nodes
 
-def generate_edges(pandanet,Loading):
+def generate_edges(pandanet,Loading,colorgradient):
 
     # closed_lines = netLV.switch[netLV.switch.closed == True].element.values.tolist()
     open_lines = netLV.switch[netLV.switch.closed == False].element.values.tolist()
@@ -92,18 +92,19 @@ def generate_edges(pandanet,Loading):
 
     all_edges =[]
     if Loading:
+
+        loading_levels = pandanet.res_bus.vm_pu.values
+        colorindex = floor(loading_levels*len(colorgradient)/100)
+        colorindex = colorindex.astype(int)
+
         for edge in pandanet.line.index:
             edge_class=''
             if edge in open_lines:
-                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'open-switch'})
+                edge_class='open-switch'
             elif pandanet.res_line.loading_percent[edge] > 100:
                 edge_class='line-overloaded'
-            elif 50 < pandanet.res_line.loading_percent[edge]  <= 100:
-                edge_class='line-loaded-50-100'
-            elif 0 < pandanet.res_line.loading_percent[edge]  <= 50:
-                edge_class='line-loaded-0-50'
             else:
-                edge_class='line-black'
+                edge_class=colorgradient[colorindex[edge]][1:] + 'line'
             all_edges.append({'data': {'label': str(edge), 'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': edge_class})
         return all_edges
     else:
@@ -158,6 +159,21 @@ def generate_stylesheet(bus_size,line_size):
                         'line-style': 'dotted',
                         'width': line_size}
                 },
+                {
+                    'selector': '.buswhite',
+                    'style': {
+                        'background-color': '#98DEDE',
+                        'width' : bus_size,
+                        'height' : bus_size,
+                        'border-width': bus_size*0.1,
+                        'border-color': 'black',}
+                },
+                {
+                    'selector': ':selected',
+                    'style': {
+                        'line-color': 'blue',
+                        'width': 3*line_size,}
+                },
                 ]
     for hexcode in green_to_red:
         all_styles.append({
@@ -170,23 +186,13 @@ def generate_stylesheet(bus_size,line_size):
                         'border-color': 'black',
                         }
                 },)
-    all_styles.append({
-                    'selector': '.buswhite',
+    for hexcode in green_to_red:
+        all_styles.append({
+                    'selector': '.' + hexcode[1:] + 'line',
                     'style': {
-                        'background-color': '#98DEDE',
-                        'width' : bus_size,
-                        'height' : bus_size,
-                        'border-width': bus_size*0.1,
-                        'border-color': 'black',
-                        }
-                }),
-    all_styles.append({
-                    'selector': ':selected',
-                    'style': {
-                        'line-color': 'blue',
-                        'width': 3*line_size,
-                        }
-                })
+                        'line-color': hexcode,
+                        'width': line_size}
+                },)
 
     return all_styles
 
@@ -210,7 +216,7 @@ app.layout = html.Div([
                             layout={'name': 'preset'},
                             style={'width': '100%', 'height': '500px'},
                             stylesheet = generate_stylesheet(6,0.5),
-                            elements=generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = False))
+                            elements=generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = False,colorgradient=green_to_red))
                         ,width = {'size':8, 'offset': 0, 'order': 1 }
                         ),
                 
@@ -265,13 +271,13 @@ app.layout = html.Div([
     )
 def map_style(radio_value_loading, radio_value_buscolor):
     if radio_value_loading =='Yes' and radio_value_buscolor=="Yes":
-        return generate_nodes(netLV,vlevel = True,colorgradient=green_to_red) + generate_edges(netLV,Loading = True)
+        return generate_nodes(netLV,vlevel = True,colorgradient=green_to_red) + generate_edges(netLV,Loading = True,colorgradient=green_to_red)
     elif radio_value_loading =='Yes' and radio_value_buscolor=="No":
-        return generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = True)
+        return generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = True,colorgradient=green_to_red)
     elif radio_value_loading =='No' and radio_value_buscolor=="Yes":
-        return generate_nodes(netLV,vlevel = True,colorgradient=green_to_red) + generate_edges(netLV,Loading = False)
+        return generate_nodes(netLV,vlevel = True,colorgradient=green_to_red) + generate_edges(netLV,Loading = False,colorgradient=green_to_red)
     else:
-        return generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = False)
+        return generate_nodes(netLV,vlevel = False,colorgradient=green_to_red) + generate_edges(netLV,Loading = False,colorgradient=green_to_red)
 
 @app.callback( #callback naar stylesheet (grote van elementen)
     Output(component_id='net map',component_property= 'stylesheet'),

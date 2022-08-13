@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, Output, Input
+from dash import Dash, html, dcc, Output, Input, ctx
 import dash_bootstrap_components as dbc
 import plotly.express as px
 
@@ -47,11 +47,18 @@ vlevels_pu = netLV.res_bus.vm_pu.values
 
 ## DASHH
 
+
 # function to help generate the elements 
 green_to_red = ['#00FF00','#11FF00','#22FF00','#33FF00','#44FF00','#55FF00','#66FF00','#77FF00','#88FF00','#99FF00',
                 '#AAFF00','#BBFF00','#CCFF00','#DDFF00','#EEFF00','#FFFF00','#FFEE00','#FFDD00','#FFCC00','#FFAA00','#FF9900','#FF8800',
                 '#FF7700','#FF6600','#FF5500','#FF4400','#FF3300','#FF2200','#FF1100','#FF0000']
 
+lines_to_activate = []  # used in later callbacks
+lines_to_deactivate = []
+
+open_lines = netLV.switch[netLV.switch.closed == False].element.values.tolist() # HARDCODED !!!!!
+closed_lines = netLV.switch[netLV.switch.closed == True].element.values.tolist()
+lines_no_switch =  [x for x in netLV.line.index if x not in netLV.switch.element.values]
 
 def generate_nodes(pandanet,vlevel,colorgradient):
     maxgran = len(colorgradient)
@@ -94,7 +101,7 @@ def generate_edges(pandanet,Loading,colorgradient):
     if Loading:
 
         loading_levels = pandanet.res_bus.vm_pu.values
-        colorindex = floor(loading_levels*len(colorgradient)/100)
+        colorindex = floor(loading_levels*len(colorgradient)/300)
         colorindex = colorindex.astype(int)
 
         for edge in pandanet.line.index:
@@ -168,12 +175,7 @@ def generate_stylesheet(bus_size,line_size):
                         'border-width': bus_size*0.1,
                         'border-color': 'black',}
                 },
-                {
-                    'selector': ':selected',
-                    'style': {
-                        'line-color': 'blue',
-                        'width': 3*line_size,}
-                },
+                
                 ]
     for hexcode in green_to_red:
         all_styles.append({
@@ -193,7 +195,12 @@ def generate_stylesheet(bus_size,line_size):
                         'line-color': hexcode,
                         'width': line_size}
                 },)
-
+    all_styles.append({
+                    'selector': ':selected',
+                    'style': {
+                        'line-color': 'blue',
+                        'width': 2*line_size,}
+                },)
     return all_styles
 
 ### application time
@@ -211,7 +218,7 @@ app.layout = html.Div([
                             id='net map',
                             autolock = True,
                             autounselectify = False,
-                            minZoom = 0.01,
+                            minZoom = 0.07,
                             maxZoom = 100,
                             layout={'name': 'preset'},
                             style={'width': '100%', 'height': '500px'},
@@ -255,6 +262,12 @@ app.layout = html.Div([
 
                         html.P(id='select-line'),
 
+                        html.Button(id="activate", children="Activate"),
+                        html.Button(id="deactivate", children="Deactivate"),
+
+                        html.P(id='activate lines'),
+                        html.P(id='deactivate lines'),
+
                         ]
                         ,width= {'size':4, 'offset': 0, 'order': 2 })
         ]),
@@ -290,7 +303,7 @@ def bus_sizer(bus, line):
 @app.callback(
             Output('hover-info-node','children'),
             Input('net map', 'mouseoverNodeData'))
-def displayTapNodeData(data):
+def displayHoverNodeData(data):
     if data:
         bus_index_str = data['id']
         bus_index = int(bus_index_str)
@@ -301,7 +314,7 @@ def displayTapNodeData(data):
     Output('hover-info-line','children'),
     Input('net map', 'mouseoverEdgeData')
     )
-def displayTapEdgeData(data):
+def displayHoverEdgeData(data):
     if data:
         line_index_str = data['label']
         line_index = int(line_index_str)
@@ -315,6 +328,54 @@ def displayTapEdgeData(data):
 def displayTapEdgeData(data):
     if data:
         line_index_str = data['label']
-        return 'line selected: '+ line_index_str
+        line_index = int(line_index_str)
+        open_lines = netLV.switch[netLV.switch.closed == False].element.values.tolist() ### NETLV is hardcoded here
+        if line_index in open_lines:
+            line_status = 'Inactive'
+        else: 
+            line_status = 'Active'
+        return 'line selected: '+ line_index_str + ', Status: ' + line_status 
+    else:
+        return 'no line is selected'
+
+
+
+@app.callback(
+    Output('activate lines','children'),
+    Input('activate', 'n_clicks'),
+    Input('net map', 'tapEdgeData')
+    )
+def add_to_activate_lines(n_clicks,line_data):
+    if line_data:
+        line_index_str = line_data['label']
+        line_index = int(line_index_str)        
+        if line_index in open_lines:
+            if  "activate" == ctx.triggered_id:
+                global lines_to_activate
+                if line_index not in lines_to_activate:
+                    lines_to_activate.append(line_index)
+                print(lines_to_activate)
+            return lines_to_activate
+
+
+@app.callback(
+    Output('deactivate lines','children'),
+    Input('deactivate', 'n_clicks'),
+    Input('net map', 'tapEdgeData')
+    )
+def add_to_deactivate_lines(n_clicks,line_data):
+    if line_data:
+        line_index_str = line_data['label']
+        line_index = int(line_index_str)
+        if line_index in closed_lines:
+            if  "deactivate" == ctx.triggered_id:
+                global lines_to_deactivate
+                if line_index not in lines_to_deactivate:
+                    lines_to_deactivate.append(line_index)
+                print(lines_to_deactivate)
+            return lines_to_deactivate
+    
+
+
 
 app.run_server(debug=True)

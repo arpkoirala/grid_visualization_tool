@@ -264,6 +264,7 @@ app.layout = html.Div([
 
                         html.Button(id="activate", children="Activate"),
                         html.Button(id="deactivate", children="Deactivate"),
+                        html.Button(id="clear", children="Clear"),
 
                         html.P('activate lines : '),
                         html.P(id='activate lines'),
@@ -349,39 +350,41 @@ def displayTapEdgeData(data):
 @app.callback(
     Output('activate lines','children'),
     Input('activate', 'n_clicks'),
-    Input('net map', 'tapEdgeData')
+    Input('net map', 'tapEdgeData'),
+    Input('clear', 'n_clicks')
     )
-def add_to_activate_lines(n_clicks,line_data):
-    if line_data:
+def add_to_activate_lines(n_clicks1,line_data,n_clicks2):
+    global lines_to_activate
+    if "clear" == ctx.triggered_id:
+        lines_to_activate = []
+    elif line_data:
         line_index_str = line_data['label']
         line_index = int(line_index_str)        
         if line_index in open_lines:
             if  "activate" == ctx.triggered_id:
-                global lines_to_activate
                 if line_index not in lines_to_activate:
                     lines_to_activate.append(line_index)
-        return str(lines_to_activate)
-    else:
-        return str(lines_to_activate)
+    return str(lines_to_activate)
+
 
 @app.callback(
     Output('deactivate lines','children'),
     Input('deactivate', 'n_clicks'),
-    Input('net map', 'tapEdgeData')
+    Input('net map', 'tapEdgeData'),
+    Input('clear', 'n_clicks')
     )
-def add_to_deactivate_lines(n_clicks,line_data):
-    if line_data:
+def add_to_deactivate_lines(n_clicks1,line_data,n_clicks2):
+    global lines_to_deactivate
+    if "clear" == ctx.triggered_id:
+        lines_to_deactivate = []
+    elif line_data:
         line_index_str = line_data['label']
         line_index = int(line_index_str)
         if line_index in closed_lines:
             if  "deactivate" == ctx.triggered_id:
-                global lines_to_deactivate
                 if line_index not in lines_to_deactivate:
                     lines_to_deactivate.append(line_index)   
-        return str(lines_to_deactivate)
-    else:
-        return str(lines_to_deactivate)
-    
+    return str(lines_to_deactivate)
 
 
 

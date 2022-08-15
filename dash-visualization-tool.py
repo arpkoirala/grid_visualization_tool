@@ -265,7 +265,11 @@ app.layout = html.Div([
                         html.Button(id="activate", children="Activate"),
                         html.Button(id="deactivate", children="Deactivate"),
 
+                        html.P('activate lines : '),
                         html.P(id='activate lines'),
+                        
+
+                        html.P('deactivate lines : '),
                         html.P(id='deactivate lines'),
 
                         ]
@@ -332,7 +336,9 @@ def displayTapEdgeData(data):
         open_lines = netLV.switch[netLV.switch.closed == False].element.values.tolist() ### NETLV is hardcoded here
         if line_index in open_lines:
             line_status = 'Inactive'
-        else: 
+        elif line_index in lines_no_switch: 
+            line_status = 'Active, No Switch'
+        else:
             line_status = 'Active'
         return 'line selected: '+ line_index_str + ', Status: ' + line_status 
     else:
@@ -354,9 +360,9 @@ def add_to_activate_lines(n_clicks,line_data):
                 global lines_to_activate
                 if line_index not in lines_to_activate:
                     lines_to_activate.append(line_index)
-                print(lines_to_activate)
-            return lines_to_activate
-
+        return str(lines_to_activate)
+    else:
+        return str(lines_to_activate)
 
 @app.callback(
     Output('deactivate lines','children'),
@@ -371,9 +377,10 @@ def add_to_deactivate_lines(n_clicks,line_data):
             if  "deactivate" == ctx.triggered_id:
                 global lines_to_deactivate
                 if line_index not in lines_to_deactivate:
-                    lines_to_deactivate.append(line_index)
-                print(lines_to_deactivate)
-            return lines_to_deactivate
+                    lines_to_deactivate.append(line_index)   
+        return str(lines_to_deactivate)
+    else:
+        return str(lines_to_deactivate)
     
 
 

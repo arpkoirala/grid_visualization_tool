@@ -37,9 +37,26 @@ def generate_stylesheet(bus_size,line_size,colorgradient):
                 {
                     'selector': '.open-switch',
                     'style':{
-                        'line-color': 'purple',
+                        'line-color': 'grey',
                         'line-style': 'dotted',
                         'width': line_size}
+                },
+                {
+                    'selector': '.line-nan',
+                    'style':{
+                        'line-color': 'purple',
+                        'width': line_size}
+                },
+                {
+                    'selector': '.bus-nan',
+                    'style': {
+                        'background-color': 'purple',
+                        'shape': 'star',
+                        'height': bus_size,
+                        'width' : bus_size,
+                        'border-width': bus_size*0.1,
+                        'border-color': 'black',
+                        }
                 },
                 {
                     'selector': '.buswhite',

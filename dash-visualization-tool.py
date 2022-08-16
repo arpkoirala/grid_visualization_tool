@@ -146,6 +146,7 @@ app.layout = html.Div([
                         html.P('Rerun Powerflow : '),
                         html.Button(id="commit", children="Commit Changes"),
                         html.P(id='running'),
+                        html.Canvas('red'),
 
                         ]
                         ,width= {'size':4, 'offset': 0, 'order': 2 })
@@ -179,15 +180,18 @@ def map_style(radio_value_loading, radio_value_buscolor,n_clicks):
         vlevels_pu = Pandanet.res_bus.vm_pu.values
         lines_to_activate = []
         lines_to_deactivate = []
-        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),'powerflow rerunning'
+        rerun_status = "powerflow recalculated"
+    else:   
+        rerun_status = """"""
+
     if radio_value_loading =='Yes' and radio_value_buscolor=="Yes":
-        return generate_nodes(Pandanet,vlevel = True,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),""
+        return generate_nodes(Pandanet,vlevel = True,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
     elif radio_value_loading =='Yes' and radio_value_buscolor=="No":
-        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),""
+        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
     elif radio_value_loading =='No' and radio_value_buscolor=="Yes":
-        return generate_nodes(Pandanet,vlevel = True,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),""
+        return generate_nodes(Pandanet,vlevel = True,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
     else:
-        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),""
+        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
 
 @app.callback( #callback naar stylesheet (grote van elementen)
     Output(component_id='net map',component_property= 'stylesheet'),

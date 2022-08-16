@@ -3,15 +3,13 @@ from numpy import floor, isnan
 
 
 def generate_nodes(pandanet,vlevel,colorgradient):
-    maxgran = len(colorgradient)
     all_nodes =[]
     ext_grid = pandanet.ext_grid.bus.values
-    gran = 6
+    max_difference = 0.05 ## max difference that will be shown on the map. Difference higher will have the same color. Used to normalize the vlevels
     if vlevel:
         vlevels = pandanet.res_bus.vm_pu.values
-        diff = (1-vlevels)/0.05*gran
-        classis = floor(diff)
-        colorindex = classis*maxgran/gran
+        diff = (1-vlevels)/max_difference*len(colorgradient)
+        colorindex = floor(diff)
         colorindex = colorindex.astype(int)
         for node in pandanet.bus.index:
             x_coord = int(pandanet.bus_geodata.x[node]*10) # !!! COORDINATES ARE x 10, 
@@ -21,12 +19,10 @@ def generate_nodes(pandanet,vlevel,colorgradient):
             elif isnan(vlevels[node]):
                 print('bus ' + str(node) + '= nan')
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'bus-nan'})
-            elif colorindex[node] < maxgran:
-                print(colorindex[node], vlevels[node]) 
-                # print(type(vlevels[node]))
+            elif colorindex[node] < len(colorgradient):
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient[colorindex[node]][1:]})  
             else:
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient[maxgran -1][1:]})
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient[len(colorgradient) -1][1:]})
     else:
         for node in pandanet.bus.index:
             x_coord = int(pandanet.bus_geodata.x[node]*10)

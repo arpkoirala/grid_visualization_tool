@@ -45,11 +45,11 @@ def generate_edges(pandanet,Loading,colorgradient):
 
         for edge in pandanet.line.index:
             edge_class=''
-            if isnan(loading_levels[edge]):
+            if edge in open_lines:
+                edge_class='open-switch'
+            elif isnan(loading_levels[edge]):
                 edge_class='line-nan'
                 print('line ' + str(edge) + '= nan')
-            elif edge in open_lines:
-                edge_class='open-switch'
             elif colorindex[edge] > len(colorgradient) - 1:  #pandanet.res_line.loading_percent[edge] > 100:
                 edge_class='line-overloaded'
             else: 

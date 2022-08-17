@@ -1,3 +1,7 @@
+import matplotlib.pyplot
+import numpy as np
+
+
 def generate_stylesheet(bus_size,line_size,colorgradient):
     all_styles = [{
                     'selector': '.ext_grid',
@@ -94,3 +98,29 @@ def generate_stylesheet(bus_size,line_size,colorgradient):
                         'width': 2*line_size,}
                 },)
     return all_styles
+
+def generate_gradient_scale_line_loading(colorgradient):
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.5))
+    ax.set_xlim(0, 100)
+    ax.set_yticks([])
+    for x in range(0,100):
+        if x == 0:
+            ax.axvline(x, color='black', linewidth=10)
+        else:
+            color_index=int(np.floor(x/100*len(colorgradient)))
+            ax.axvline(x, color=colorgradient[color_index], linewidth=100)
+    return fig
+
+def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
+    x_start = 1
+    x_end = cut_off_v_pu
+    step_size = (x_start - x_end)/len(colorgradient)
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.5))
+    ax.set_xlim(x_start, x_end)
+    ax.set_yticks([])
+    for x in np.arange(x_start, x_end, -step_size):
+        diff = (1-x)/(x_start - x_end)*len(colorgradient)
+        colorindex = np.floor(diff)
+        colorindex = colorindex.astype(int)
+        ax.axvline(x, color=colorgradient[colorindex], linewidth=100)
+    return fig

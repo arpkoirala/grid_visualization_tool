@@ -10,7 +10,7 @@ import dash_cytoscape as cyto
 
 import pandas as pd
 import pandapower as pp
-# import pandapower.plotting as pplt
+import pandapower.plotting as pplt
 # import pandapower.topology as top
 # import plotly as plot
 # import pandapower.plotting.plotly as pplotly
@@ -18,10 +18,11 @@ import pandapower as pp
 # import plotly.graph_objects as go
 # import numpy as np
 # from pandapower.plotting.plotly import get_plotly_color_palette
-
+import matplotlib.pyplot
+import numpy as np
 
 from create_net import createLVnet, createMVnet
-from generate_stylesheet import generate_stylesheet
+from generate_stylesheet import generate_stylesheet, generate_gradient_scale_line_loading, generate_gradient_scale_vlevel_undervoltage
 from generate_cytoscape_elements import generate_nodes, generate_edges
 
 
@@ -42,9 +43,10 @@ load_per_bus_df = pd.read_excel(pathLV+'load_per_bus_df.xlsx')
 
 netLV = createLVnet(bus_df, line_df, ext_grid_df, load_per_bus_df)
 
+pathMV = 'data/MV_benchmarks/'
+netMV = createMVnet(pathMV+'bus33.json')
 
-
-Pandanet = netLV
+Pandanet = netMV
 
 pp.runpp(Pandanet)
 loading_values = Pandanet.res_line.loading_percent.values
@@ -57,10 +59,12 @@ vlevels_pu = Pandanet.res_bus.vm_pu.values
 ## DASHH
 
 
-# function to help generate the elements 
+
 green_to_red = ['#00FF00','#11FF00','#22FF00','#33FF00','#44FF00','#55FF00','#66FF00','#77FF00','#88FF00','#99FF00',
                 '#AAFF00','#BBFF00','#CCFF00','#DDFF00','#EEFF00','#FFFF00','#FFEE00','#FFDD00','#FFCC00','#FFAA00','#FF9900','#FF8800',
                 '#FF7700','#FF6600','#FF5500','#FF4400','#FF3300','#FF2200','#FF1100','#FF0000']
+
+
 
 
 ## Global variables used in callbacks
@@ -146,7 +150,8 @@ app.layout = html.Div([
                         html.P('Rerun Powerflow : '),
                         html.Button(id="commit", children="Commit Changes"),
                         html.P(id='running'),
-                        html.Canvas('red'),
+                        
+                        #html.Img(generate_gradient_scale_line_loading(green_to_red))
 
                         ]
                         ,width= {'size':4, 'offset': 0, 'order': 2 })

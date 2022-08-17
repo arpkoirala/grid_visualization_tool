@@ -64,7 +64,10 @@ green_to_red = ['#00FF00','#11FF00','#22FF00','#33FF00','#44FF00','#55FF00','#66
                 '#AAFF00','#BBFF00','#CCFF00','#DDFF00','#EEFF00','#FFFF00','#FFEE00','#FFDD00','#FFCC00','#FFAA00','#FF9900','#FF8800',
                 '#FF7700','#FF6600','#FF5500','#FF4400','#FF3300','#FF2200','#FF1100','#FF0000']
 
+cut_off_v_pu_hardcoded = 0.95 # cut_off_v_pu is hardcoded
+
 generate_gradient_scale_line_loading(green_to_red)
+generate_gradient_scale_vlevel_undervoltage(green_to_red,cut_off_v_pu_hardcoded) # cut_off_v_pu is hardcoded
 
 
 
@@ -100,6 +103,7 @@ app.layout = html.Div([
                             ),
 
                         html.Img(src='assets/linegradient.png'),
+                        html.Img(src='assets/undervoltagegradient.png'),
                         ],
                     width = {'size':8, 'offset': 0, 'order': 1 }
                         ),

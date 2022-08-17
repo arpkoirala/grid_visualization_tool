@@ -110,8 +110,8 @@ def generate_gradient_scale_line_loading(colorgradient):
         else:
             color_index=int(np.floor(x/100*len(colorgradient)))
             ax.axvline(x, color=colorgradient[color_index], linewidth=100)
-    matplotlib.pyplot.savefig('assests/linegradient.png',bbox_inches='tight')
-    return fig
+    matplotlib.pyplot.savefig('assets/linegradient.png',bbox_inches='tight')
+    return 
 
 def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
     x_start = 1
@@ -126,4 +126,5 @@ def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
         colorindex = np.floor(diff)
         colorindex = colorindex.astype(int)
         ax.axvline(x, color=colorgradient[colorindex], linewidth=100)
-    return fig
+    matplotlib.pyplot.savefig('assets/undervoltagegradient.png',bbox_inches='tight')
+    return

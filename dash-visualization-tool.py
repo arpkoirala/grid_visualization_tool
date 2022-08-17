@@ -64,6 +64,8 @@ green_to_red = ['#00FF00','#11FF00','#22FF00','#33FF00','#44FF00','#55FF00','#66
                 '#AAFF00','#BBFF00','#CCFF00','#DDFF00','#EEFF00','#FFFF00','#FFEE00','#FFDD00','#FFCC00','#FFAA00','#FF9900','#FF8800',
                 '#FF7700','#FF6600','#FF5500','#FF4400','#FF3300','#FF2200','#FF1100','#FF0000']
 
+generate_gradient_scale_line_loading(green_to_red)
+
 
 
 
@@ -84,8 +86,8 @@ app.layout = html.Div([
         
         dbc.Row([
             
-                dbc.Col(
-                    cyto.Cytoscape(
+                dbc.Col([
+                        cyto.Cytoscape(
                             id='net map',
                             autolock = True,
                             autounselectify = False,
@@ -96,9 +98,12 @@ app.layout = html.Div([
                             stylesheet = generate_stylesheet(6,0.5,green_to_red),
                             elements=generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red)
                             ),
-                    
+
+                        html.Img(src='assets/linegradient.png'),
+                        ],
                     width = {'size':8, 'offset': 0, 'order': 1 }
                         ),
+
                 
                 dbc.Col([
                         html.P('Display loading percentage of lines:'),
@@ -150,8 +155,6 @@ app.layout = html.Div([
                         html.P('Rerun Powerflow : '),
                         html.Button(id="commit", children="Commit Changes"),
                         html.P(id='running'),
-                        
-                        #html.Img(generate_gradient_scale_line_loading(green_to_red))
 
                         ]
                         ,width= {'size':4, 'offset': 0, 'order': 2 })

@@ -2,7 +2,7 @@ import matplotlib.pyplot
 import numpy as np
 
 
-def generate_stylesheet(bus_size,line_size,colorgradient):
+def generate_stylesheet(bus_size,line_size,colorgradient,colorgradient2):
     all_styles = [{
                     'selector': '.ext_grid',
                     'style': {
@@ -84,6 +84,17 @@ def generate_stylesheet(bus_size,line_size,colorgradient):
                         'border-color': 'black',
                         }
                 },)
+    for hexcode in colorgradient2:
+        all_styles.append({
+                    'selector': '.' + hexcode[1:],
+                    'style': {
+                        'background-color': hexcode,
+                        'width' : bus_size,
+                        'height' : bus_size,
+                        'border-width': bus_size*0.1,
+                        'border-color': 'black',
+                        }
+                },)
     for hexcode in colorgradient:
         all_styles.append({
                     'selector': '.' + hexcode[1:] + 'line',
@@ -91,6 +102,7 @@ def generate_stylesheet(bus_size,line_size,colorgradient):
                         'line-color': hexcode,
                         'width': line_size}
                 },)
+    
     all_styles.append({
                     'selector': ':selected',
                     'style': {
@@ -100,7 +112,7 @@ def generate_stylesheet(bus_size,line_size,colorgradient):
     return all_styles
 
 def generate_gradient_scale_line_loading(colorgradient):
-    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.5))
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
     ax.set_xlim(0, 100)
     ax.set_yticks([])
     matplotlib.pyplot.xlabel('loading percentage of line')
@@ -117,7 +129,7 @@ def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
     x_start = 1
     x_end = cut_off_v_pu
     step_size = (x_start - x_end)/len(colorgradient)
-    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.5))
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
     ax.set_xlim(x_start, x_end)
     ax.set_yticks([])
     matplotlib.pyplot.xlabel('Undervoltage of Busses [pu]')
@@ -127,4 +139,20 @@ def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
         colorindex = colorindex.astype(int)
         ax.axvline(x, color=colorgradient[colorindex], linewidth=100)
     matplotlib.pyplot.savefig('assets/undervoltagegradient.png',bbox_inches='tight')
+    return
+
+def generate_gradient_scale_vlevel_overvoltage(colorgradient,cut_off_v_pu):
+    x_start = 1
+    x_end = cut_off_v_pu
+    step_size = (x_end - x_start)/len(colorgradient)
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
+    ax.set_xlim(x_start, x_end)
+    ax.set_yticks([])
+    matplotlib.pyplot.xlabel('Overvoltage of Busses [pu]')
+    for x in np.arange(x_start, x_end, step_size):
+        diff = (x-1)/(x_end - x_start)*len(colorgradient)
+        colorindex = np.floor(diff)
+        colorindex = colorindex.astype(int)
+        ax.axvline(x, color=colorgradient[colorindex], linewidth=100)
+    matplotlib.pyplot.savefig('assets/overvoltagegradient.png',bbox_inches='tight')
     return

@@ -18,16 +18,16 @@ import pandapower.plotting as pplt
 # import plotly.graph_objects as go
 # import numpy as np
 # from pandapower.plotting.plotly import get_plotly_color_palette
-import matplotlib.pyplot
-import numpy as np
+# import matplotlib.pyplot
+# import numpy as np
 
 from create_net import createLVnet, createMVnet
-from generate_stylesheet import generate_stylesheet, generate_gradient_scale_line_loading, generate_gradient_scale_vlevel_undervoltage
+from generate_stylesheet import generate_stylesheet, generate_gradient_scale_line_loading, generate_gradient_scale_vlevel_undervoltage, generate_gradient_scale_vlevel_overvoltage
 from generate_cytoscape_elements import generate_nodes, generate_edges
 
 
 
-##### creating LV net #####
+##### creating LV and MV net #####
 pathLV = 'data/spanish_LV_net/'
 
 bus_df = pd.read_excel(pathLV+'bus_df.xlsx')
@@ -46,6 +46,11 @@ netLV = createLVnet(bus_df, line_df, ext_grid_df, load_per_bus_df)
 pathMV = 'data/MV_benchmarks/'
 netMV = createMVnet(pathMV+'bus33.json')
 
+
+#########
+
+
+
 Pandanet = netMV
 
 pp.runpp(Pandanet)
@@ -63,12 +68,16 @@ vlevels_pu = Pandanet.res_bus.vm_pu.values
 green_to_red = ['#00FF00','#11FF00','#22FF00','#33FF00','#44FF00','#55FF00','#66FF00','#77FF00','#88FF00','#99FF00',
                 '#AAFF00','#BBFF00','#CCFF00','#DDFF00','#EEFF00','#FFFF00','#FFEE00','#FFDD00','#FFCC00','#FFAA00','#FF9900','#FF8800',
                 '#FF7700','#FF6600','#FF5500','#FF4400','#FF3300','#FF2200','#FF1100','#FF0000']
+green_to_blue = ['#00FF00','#00FF11','#00FF22','#00FF33','#00FF44','#00FF55','#00FF66','#00FF77','#00FF88','#00FF99',
+                '#00FFAA','#00FFBB','#00FFCC','#00FFDD','#00FFEE','#00FFFF','#00EEFF','#00DDFF','#00CCFF','#00AAFF','#0099FF','#0088FF',
+                '#0077FF','#0066FF','#0055FF','#0044FF','#0033FF','#0022FF','#0011FF','#0000FF']
 
-cut_off_v_pu_hardcoded = 0.95 # cut_off_v_pu is hardcoded
+cut_off_v_pu_hardcoded_undervoltage = 0.95 # cut_off_v_pu is hardcoded
+cut_off_v_pu_hardcoded_overvoltage = 1.05
 
 generate_gradient_scale_line_loading(green_to_red)
-generate_gradient_scale_vlevel_undervoltage(green_to_red,cut_off_v_pu_hardcoded) # cut_off_v_pu is hardcoded
-
+generate_gradient_scale_vlevel_undervoltage(green_to_red,cut_off_v_pu_hardcoded_undervoltage) # cut_off_v_pu is hardcoded, also in generate nodes
+generate_gradient_scale_vlevel_overvoltage(green_to_blue,cut_off_v_pu_hardcoded_overvoltage)
 
 
 
@@ -98,12 +107,13 @@ app.layout = html.Div([
                             maxZoom = 100,
                             layout={'name': 'preset'},
                             style={'width': '100%', 'height': '500px'},
-                            stylesheet = generate_stylesheet(6,0.5,green_to_red),
-                            elements=generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red)
+                            stylesheet = generate_stylesheet(6,0.5,green_to_red,green_to_blue),
+                            elements=generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red)
                             ),
 
                         html.Img(src='assets/linegradient.png'),
                         html.Img(src='assets/undervoltagegradient.png'),
+                        html.Img(src='assets/overvoltagegradient.png'),
                         ],
                     width = {'size':8, 'offset': 0, 'order': 1 }
                         ),
@@ -128,13 +138,13 @@ app.layout = html.Div([
                                 
                         dcc.Slider(1,50,
                                     step =2,
-                                    value=25,
+                                    value=3,
                                     id = 'bus-size-slider',
                         ),
                                 
                         dcc.Slider(1,10,
                                     step =1,
-                                    value=6,
+                                    value=1,
                                     id = 'line-size-slider',
                         ),
                         
@@ -197,13 +207,13 @@ def map_style(radio_value_loading, radio_value_buscolor,n_clicks):
         rerun_status = """"""
 
     if radio_value_loading =='Yes' and radio_value_buscolor=="Yes":
-        return generate_nodes(Pandanet,vlevel = True,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = True,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
     elif radio_value_loading =='Yes' and radio_value_buscolor=="No":
-        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
     elif radio_value_loading =='No' and radio_value_buscolor=="Yes":
-        return generate_nodes(Pandanet,vlevel = True,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = True,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
     else:
-        return generate_nodes(Pandanet,vlevel = False,colorgradient=green_to_red) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
 
 @app.callback( #callback naar stylesheet (grote van elementen)
     Output(component_id='net map',component_property= 'stylesheet'),
@@ -211,7 +221,7 @@ def map_style(radio_value_loading, radio_value_buscolor,n_clicks):
     Input(component_id='line-size-slider', component_property='value')
     )
 def bus_sizer(bus, line):
-    return generate_stylesheet(bus, line,green_to_red)
+    return generate_stylesheet(bus, line,green_to_red,green_to_blue)
 
 @app.callback(
             Output('hover-info-node','children'),

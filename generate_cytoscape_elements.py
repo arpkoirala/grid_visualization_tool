@@ -1,4 +1,7 @@
 from numpy import floor, isnan
+import networkx as nx
+from pandapower import topology
+import pandapower as pp
 
 
 
@@ -45,7 +48,7 @@ def generate_nodes(pandanet,vlevel,colorgradient1,colorgradient2):
             if node in ext_grid:
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid'})
             else:
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'buswhite'})
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'busstandard'})
     return all_nodes
 
 def generate_edges(pandanet,Loading,colorgradient):
@@ -78,3 +81,18 @@ def generate_edges(pandanet,Loading,colorgradient):
             else:
                 all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'line-black'})
         return all_edges
+
+def is_radial(net):
+
+    graph = topology.create_nxgraph(net)
+    
+    for i in range(len(net.ext_grid.bus)-1):
+        graph.add_edges_from([(net.ext_grid.bus[i],net.ext_grid.bus[i+1])])
+
+    if not len(graph.nodes())==len(graph.edges())+1:
+        return False
+    
+    elif not nx.is_connected(graph):
+        return False
+    else:
+        return True

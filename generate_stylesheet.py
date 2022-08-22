@@ -33,7 +33,7 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'width': line_size}
                 },
                 {
-                    'selector': '.line-nan',
+                    'selector': '.line-nan', # style when the powerflow calculations return a NaN value for a certain line or node
                     'style':{
                         'line-color': 'purple',
                         'width': line_size}
@@ -58,10 +58,18 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'border-width': bus_size*0.1,
                         'border-color': 'black',}
                 },
+                {
+                    'selector': '.line-overloaded',
+                    'style': {
+                        'line-color': '#FF0000',
+                        'width': line_size}
+                },
                 
                 ]
-    for hexcode in colorgradient1: # for loops are used to create 30 different styles, each with a color from the colorgradient used. 
-        all_styles.append({         # the colorgradients have to be discrete in order to be used with this application
+    for hexcode in colorgradient1: 
+        # for loops are used to create 30 different styles, each with a color from the colorgradient used.
+        # the colorgradients have to be discrete in order to be used with this application
+        all_styles.append({         
                     'selector': '.' + hexcode[1:], 
                     'style': {
                         'background-color': hexcode,
@@ -71,7 +79,8 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'border-color': 'black',
                         } # this is the colorgradient for undervoltages
                 },)
-    for hexcode in colorgradient2: # this is the colorgradient for overvoltages
+    for hexcode in colorgradient2: 
+        # this is the colorgradient for overvoltages
         all_styles.append({
                     'selector': '.' + hexcode[1:],
                     'style': {
@@ -82,7 +91,8 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'border-color': 'black',
                         }
                 },)
-    for hexcode in colorgradient1: # this is the colorgradients for line loading
+    for hexcode in colorgradient1: 
+        # this is the colorgradients for line loading
         all_styles.append({
                     'selector': '.' + hexcode[1:] + 'line',
                     'style': {
@@ -90,7 +100,8 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'width': line_size}
                 },)
     
-    all_styles.append({ # highlights a line when it is selected
+    all_styles.append({ 
+        # highlights a line when it is selected
                     'selector': ':selected',
                     'style': {
                         'line-color': 'blue',
@@ -98,7 +109,9 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                 },)
     return all_styles
 
-def generate_gradient_scale_line_loading(colorgradient): # plots a graph of vertical lines. The result is a colorgradient with the correct scale on the x-axis
+def generate_gradient_scale_line_loading(colorgradient): 
+    # plots a graph of vertical lines. 
+    # The result is a colorgradient with the correct scale on the x-axis
     fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
     ax.set_xlim(0, 100)
     ax.set_yticks([])
@@ -112,7 +125,9 @@ def generate_gradient_scale_line_loading(colorgradient): # plots a graph of vert
     matplotlib.pyplot.savefig('assets/linegradient.png',bbox_inches='tight') # the plot is saved as a png. It is later displayed using an html.IMG component
     return 
 
-def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu): # plots a graph of vertical lines. The result is a colorgradient with the correct scale on the x-axis
+def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu): 
+    # plots a graph of vertical lines. 
+    # The result is a colorgradient with the correct scale on the x-axis
     x_start = 1
     x_end = cut_off_v_pu # cut_off_v_pu in hardcoded in the main file, but can easily be changed there.
     step_size = (x_start - x_end)/len(colorgradient)
@@ -128,7 +143,9 @@ def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu): # p
     matplotlib.pyplot.savefig('assets/undervoltagegradient.png',bbox_inches='tight') # the plot is saved as a png. It is later displayed using an html.IMG component
     return
 
-def generate_gradient_scale_vlevel_overvoltage(colorgradient,cut_off_v_pu): # plots a graph of vertical lines. The result is a colorgradient with the correct scale on the x-axis
+def generate_gradient_scale_vlevel_overvoltage(colorgradient,cut_off_v_pu): 
+    # plots a graph of vertical lines.
+    # The result is a colorgradient with the correct scale on the x-axis
     x_start = 1
     x_end = cut_off_v_pu # cut_off_v_pu in hardcoded in the main file, but can easily be changed there.
     step_size = (x_end - x_start)/len(colorgradient)

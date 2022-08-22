@@ -33,7 +33,7 @@ def generate_nodes(pandanet,vlevel,colorgradient1,colorgradient2):
                     diff = (vlevels[node]-1)/max_difference*len(colorgradient2)
                     colorindex = floor(diff)
                     colorindex = colorindex.astype(int)
-                    if colorindex[node] < len(colorgradient2):
+                    if colorindex < len(colorgradient2):
                         all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient2[colorindex][1:]})  
                     else:
                         all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient2[len(colorgradient2) -1][1:]})

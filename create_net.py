@@ -1,6 +1,8 @@
 
 import pandapower as pp
 import json
+from pandapower import topology
+import networkx as nx
 
 def createLVnet(bus_df, line_df, ext_grid_df, load_per_bus_df):
     # S.K.: parser for creating a pandapower-network from the bus/ line/ extgrid and load dataframes
@@ -36,3 +38,19 @@ def createMVnet(jsonfile_with_net_info):
 
 
     return net
+
+
+def is_radial(net):
+
+    graph = topology.create_nxgraph(net)
+    
+    for i in range(len(net.ext_grid.bus)-1):
+        graph.add_edges_from([(net.ext_grid.bus[i],net.ext_grid.bus[i+1])])
+
+    if not len(graph.nodes())==len(graph.edges())+1:
+        return False
+    
+    elif not nx.is_connected(graph):
+        return False
+    else:
+        return True

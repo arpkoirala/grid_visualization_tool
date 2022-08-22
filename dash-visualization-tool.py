@@ -21,7 +21,7 @@ import pandapower.plotting as pplt
 # import matplotlib.pyplot
 # import numpy as np
 
-from create_net import createLVnet, createMVnet
+from create_net import createLVnet, createMVnet, is_radial
 from generate_stylesheet import generate_stylesheet, generate_gradient_scale_line_loading, generate_gradient_scale_vlevel_undervoltage, generate_gradient_scale_vlevel_overvoltage
 from generate_cytoscape_elements import generate_nodes, generate_edges
 
@@ -51,7 +51,7 @@ netMV = createMVnet(pathMV+'bus33.json')
 
 
 
-Pandanet = netMV
+Pandanet = netLV
 
 pp.runpp(Pandanet)
 loading_values = Pandanet.res_line.loading_percent.values
@@ -98,80 +98,85 @@ app.layout = html.Div([
         
         dbc.Row([
             
-                dbc.Col([
-                        cyto.Cytoscape(
-                            id='net map',
-                            autolock = True,
-                            autounselectify = False,
-                            minZoom = 0.07,
-                            maxZoom = 100,
-                            layout={'name': 'preset'},
-                            style={'width': '100%', 'height': '500px'},
-                            stylesheet = generate_stylesheet(6,0.5,green_to_red,green_to_blue),
-                            elements=generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red)
-                            ),
+        dbc.Col([
+                cyto.Cytoscape(
+                    id='net map',
+                    autolock = True,
+                    autounselectify = False,
+                    minZoom = 0.02,
+                    maxZoom = 100,
+                    layout={'name': 'preset'},
+                    style={'width': '100%', 'height': '500px'},
+                    stylesheet = generate_stylesheet(6,0.5,green_to_red,green_to_blue),
+                    elements=generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red)
+                    ),
 
-                        html.Img(src='assets/linegradient.png'),
-                        html.Img(src='assets/undervoltagegradient.png'),
-                        html.Img(src='assets/overvoltagegradient.png'),
-                        ],
-                    width = {'size':8, 'offset': 0, 'order': 1 }
-                        ),
+                html.Img(src='assets/linegradient.png'),
+                html.Img(src='assets/undervoltagegradient.png'),
+                html.Img(src='assets/overvoltagegradient.png'),
+                ],
+                    
+                width = {'size':8, 'offset': 0, 'order': 1 }
+                ),
 
                 
-                dbc.Col([
-                        html.P('Display loading percentage of lines:'),
+        dbc.Col([
+                html.P('Display loading percentage of lines:'),
                         
-                        dcc.RadioItems(
-                                    id = 'displayloading',
-                                    options = ['Yes', 'No'],
-                                    value = 'No'
-                                    ),             
+                dcc.RadioItems(
+                            id = 'displayloading',
+                            options = ['Yes', 'No'],
+                            value = 'No'
+                            ),             
                         
-                        html.P('Display voltage level of busses:'),
+                html.P('Display voltage level of busses:'),
                         
-                        dcc.RadioItems(
-                                    id = 'buslevel',
-                                    options = ['Yes', 'No'],
-                                    value = 'No',
+                dcc.RadioItems(
+                            id = 'buslevel',
+                            options = ['Yes', 'No'],
+                            value = 'No',
+                ),
+                                
+                dcc.Slider(1,
+                            50,
+                            step =2,
+                            value=3,
+                            id = 'bus-size-slider',
                         ),
                                 
-                        dcc.Slider(1,50,
-                                    step =2,
-                                    value=3,
-                                    id = 'bus-size-slider',
-                        ),
-                                
-                        dcc.Slider(1,10,
-                                    step =1,
-                                    value=1,
-                                    id = 'line-size-slider',
+                dcc.Slider(1,10,
+                            step =1,
+                            value=1,
+                            id = 'line-size-slider',
                         ),
                         
-                        html.P(id='hover-info-node'),
+                html.P(id='hover-info-node'),
                         
-                        html.P(id='hover-info-line'),
+                html.P(id='hover-info-line'),
 
-                        html.P(id='select-line'),
+                html.P(id='select-line'),
 
-                        html.Button(id="activate", children="Activate"),
-                        html.Button(id="deactivate", children="Deactivate"),
-                        html.Button(id="clear", children="Clear"),
+                html.Button(id="activate", children="Activate"),
+                html.Button(id="deactivate", children="Deactivate"),
+                html.Button(id="clear", children="Clear"),
 
-                        html.P('activate lines : '),
-                        html.P(id='activate lines'),
+                html.P('activate lines : '),
+                html.P(id='activate lines'),
                         
 
-                        html.P('deactivate lines : '),
-                        html.P(id='deactivate lines'),
+                html.P('deactivate lines : '),
+                html.P(id='deactivate lines'),
 
 
-                        html.P('Rerun Powerflow : '),
-                        html.Button(id="commit", children="Commit Changes"),
-                        html.P(id='running'),
+                html.P('Rerun Powerflow : '),
+                html.Button(id="commit", children="Commit Changes"),
+                html.P(id='running'),
 
-                        ]
-                        ,width= {'size':4, 'offset': 0, 'order': 2 })
+                html.P(id='radiality',children="Radial and Connected: " + str(is_radial(Pandanet))),
+
+                ]
+            
+            ,width= {'size':4, 'offset': 0, 'order': 2 })
         ]),
     ])
 
@@ -179,6 +184,7 @@ app.layout = html.Div([
 @app.callback( # callback naar elements (loading en vlevel)
     Output(component_id='net map',component_property= 'elements'),
     Output('running','children'),
+    Output('radiality','children'),
     Input(component_id='displayloading', component_property='value'),
     Input(component_id='buslevel', component_property='value'),
     Input('commit', 'n_clicks')
@@ -203,17 +209,18 @@ def map_style(radio_value_loading, radio_value_buscolor,n_clicks):
         lines_to_activate = []
         lines_to_deactivate = []
         rerun_status = "powerflow recalculated"
+    
     else:   
-        rerun_status = """"""
+        rerun_status = ""
 
     if radio_value_loading =='Yes' and radio_value_buscolor=="Yes":
-        return generate_nodes(Pandanet,vlevel = True,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = True,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status,"Radial and Connected: " + str(is_radial(Pandanet))
     elif radio_value_loading =='Yes' and radio_value_buscolor=="No":
-        return generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = True,colorgradient=green_to_red),rerun_status,"Radial and Connected: " + str(is_radial(Pandanet))
     elif radio_value_loading =='No' and radio_value_buscolor=="Yes":
-        return generate_nodes(Pandanet,vlevel = True,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = True,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status,"Radial and Connected: " + str(is_radial(Pandanet))
     else:
-        return generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status
+        return generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red),rerun_status,"Radial and Connected: " + str(is_radial(Pandanet))
 
 @app.callback( #callback naar stylesheet (grote van elementen)
     Output(component_id='net map',component_property= 'stylesheet'),
@@ -305,6 +312,6 @@ def add_to_deactivate_lines(n_clicks1,line_data,n_clicks2):
             if  "deactivate" == ctx.triggered_id:
                 if line_index not in lines_to_deactivate:
                     lines_to_deactivate.append(line_index)   
-    return str(lines_to_deactivate) 
+    return str(lines_to_deactivate)
 
 app.run_server(debug=True)

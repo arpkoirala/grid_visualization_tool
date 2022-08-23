@@ -20,7 +20,9 @@ Only changing values of parameters used within these components will not update 
 A components can only act as output of one callback. 
 This can lead to extensive callback-functions if more than one (interactive) functionality is required of a component (like the for the network plot)
 
-## HardCodings
 
-v_cut_off
-green_to_red/green_to_blue
+Hardcoded:
+When switching between networks, you have to manually edit the code. Only one line of code has to be changed for this (highlighted in code).
+V_cut_off is also hardcoded at 0.95 and 1.05 pu
+
+a feature can be added for both of these so they can be changed via the webpage, but I didnt have enough time to implement this

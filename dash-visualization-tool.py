@@ -46,7 +46,7 @@ green_to_blue = ['#00FF00','#00FF11','#00FF22','#00FF33','#00FF44','#00FF55','#0
 cut_off_v_pu_hardcoded_undervoltage = 0.95 # cut_off_v_pu is hardcoded; below(or above) the cutt of voltage all nodes will have the same color
 cut_off_v_pu_hardcoded_overvoltage = 1.05
 
-Pandanet = netLV  # Change here to the network you want to use
+Pandanet = netMV  # Change here to the network you want to use
 pp.runpp(Pandanet) # run powerflow on the network
 
 generate_gradient_scale_line_loading(green_to_red) #auxilary function to generate an image containing a legend for the colors used to represent the power flow results
@@ -66,9 +66,10 @@ lines_to_deactivate = []
 
 app = Dash(__name__,external_stylesheets=[dbc.themes.LUX]) # An dbc-stylesheet has to be used, otherwise the dbc-layout commands will not work
 
-app.layout = html.Div([
+app.layout = dbc.Container([
+    # Container, Row and Col commands are used for the layout
 
-        dbc.Row( dbc.Col (html.H3('Visualization of Power-Flow Calculation Results'), width= {'size': 6 ,'offset': 4},)
+        dbc.Row( dbc.Col (html.H3('Visualization of Power-Flow Calculation Results', className='text-center my-4 mp-4'))
         ),
         
         dbc.Row([
@@ -86,43 +87,14 @@ app.layout = html.Div([
                     elements=generate_nodes(Pandanet,vlevel = False,colorgradient1=green_to_red,colorgradient2=green_to_blue,v_cuttoff_under=cut_off_v_pu_hardcoded_undervoltage,v_cuttoff_over=cut_off_v_pu_hardcoded_overvoltage) + generate_edges(Pandanet,Loading = False,colorgradient=green_to_red)
                     ), # create all the nodes and edges on the map; also done by auxilary fucntion
 
-                html.Img(src='assets/linegradient.png'), # display the legends for colors used to represent the power flow results
-                html.Img(src='assets/undervoltagegradient.png'),
-                html.Img(src='assets/overvoltagegradient.png'),
-                ],
-                    
+                
+                ], 
+                className="border border-secondary",    
                 width = {'size':8, 'offset': 0, 'order': 1 }
                 ),
 
                 
-        dbc.Col([
-                html.P('Display loading percentage of lines:'),
-                        
-                dcc.RadioItems( # Radioitems: User can choose between 2 values/options
-                            id = 'displayloading',
-                            options = ['Yes', 'No'],
-                            value = 'No'
-                            ),             
-                        
-                html.P('Display voltage level of busses:'),
-                        
-                dcc.RadioItems(
-                            id = 'buslevel',
-                            options = ['Yes', 'No'],
-                            value = 'No',
-                ),
-                                
-                dcc.Slider(1, 50, # sliders to alter the size of the nodes and the lines
-                            step =2,
-                            value=3,
-                            id = 'bus-size-slider',
-                        ),
-                                
-                dcc.Slider(1,10,
-                            step =1,
-                            value=1,
-                            id = 'line-size-slider',
-                        ),
+        dbc.Col([                               
                         
                 html.P(id='hover-info-node', children = ""), # children contains what will be displayed in the application, it is also the component that is changed in the callbacks
                         
@@ -148,11 +120,54 @@ app.layout = html.Div([
 
                 html.P(id='radiality',children="Radial and Connected: " + str(is_radial(Pandanet))),
 
+
+                
+
                 ]
             
-            ,width= {'size':4, 'offset': 0, 'order': 2 })
+            ,className="border border-secondary", width= {'size':4, 'offset': 0, 'order': 2 })
         ]),
-    ])
+        dbc.Row([
+            
+        dbc.Col([
+                html.Img(src='assets/linegradient.png'), # display the legends for colors used to represent the power flow results
+                html.Img(src='assets/undervoltagegradient.png'),
+                html.Img(src='assets/overvoltagegradient.png'),
+                ],width= {'size':6, 'offset': 0, 'order': 1 }
+                ),
+        dbc.Col([html.P('Display loading percentage of lines:'),
+                        
+                dcc.RadioItems( # Radioitems: User can choose between 2 values/options
+                            id = 'displayloading',
+                            options = ['Yes', 'No'],
+                            value = 'No'
+                        ),             
+                        
+                html.P('Display voltage level of busses:',className='mp-0'),
+                        
+                dcc.RadioItems(
+                            id = 'buslevel',
+                            options = ['Yes', 'No'],
+                            value = 'No',
+                            className='mp-2'
+                        ),
+                html.P('Node size: '),
+                dcc.Slider(1, 50, # sliders to alter the size of the nodes and the lines
+                            step =2,
+                            value=3,
+                            id = 'bus-size-slider',
+                        ),
+
+                html.P('line width: '),                
+                dcc.Slider(1,10,
+                            step =1,
+                            value=1,
+                            id = 'line-size-slider',
+                        ),
+                ], className="border border-secondary", width= {'size':4, 'offset': 2, 'order': 2 }),
+        ])
+
+    ], fluid=True)
 
 
 @app.callback( 

@@ -134,7 +134,7 @@ def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
     fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
     ax.set_xlim(x_start, x_end)
     ax.set_yticks([])
-    matplotlib.pyplot.xlabel('Undervoltage of Busses [pu]')
+    matplotlib.pyplot.xlabel('Undervoltage of Bus [pu]')
     for x in np.arange(x_start, x_end, -step_size):
         diff = (1-x)/(x_start - x_end)*len(colorgradient) # transformation that projects the range of undervoltage (v_cuttoff - 1) onto the amount of colors in the colorgradient
         colorindex = np.floor(diff)
@@ -152,7 +152,7 @@ def generate_gradient_scale_vlevel_overvoltage(colorgradient,cut_off_v_pu):
     fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
     ax.set_xlim(x_start, x_end)
     ax.set_yticks([])
-    matplotlib.pyplot.xlabel('Overvoltage of Busses [pu]')
+    matplotlib.pyplot.xlabel('Overvoltage of Bus [pu]')
     for x in np.arange(x_start, x_end, step_size):
         diff = (x-1)/(x_end - x_start)*len(colorgradient) # transformation that projects the range of undervoltage (v_cuttoff - 1) onto the amount of colors in the colorgradient
         colorindex = np.floor(diff)

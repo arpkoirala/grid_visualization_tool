@@ -20,6 +20,11 @@ Only changing values of parameters used within these components will not update 
 A components can only act as output of one callback. 
 This can lead to extensive callback-functions if more than one (interactive) functionality is required of a component (like the for the network plot)
 
+Files:
+
+dash-visualizatio-tool.py is the main file, from which the application runs. The other files contain auxilary functions that are used in the main file. 
+
+
 
 Hardcoded:
 When switching between networks, you have to manually edit the code. Only one line of code has to be changed for this (highlighted in code).

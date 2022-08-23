@@ -112,7 +112,7 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
 def generate_gradient_scale_line_loading(colorgradient): 
     # plots a graph of vertical lines. 
     # The result is a colorgradient with the correct scale on the x-axis
-    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.25))
     ax.set_xlim(0, 100)
     ax.set_yticks([])
     matplotlib.pyplot.xlabel('loading percentage of line')
@@ -131,7 +131,7 @@ def generate_gradient_scale_vlevel_undervoltage(colorgradient,cut_off_v_pu):
     x_start = 1
     x_end = cut_off_v_pu # cut_off_v_pu in hardcoded in the main file, but can easily be changed there.
     step_size = (x_start - x_end)/len(colorgradient)
-    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.25))
     ax.set_xlim(x_start, x_end)
     ax.set_yticks([])
     matplotlib.pyplot.xlabel('Undervoltage of Bus [pu]')
@@ -149,7 +149,7 @@ def generate_gradient_scale_vlevel_overvoltage(colorgradient,cut_off_v_pu):
     x_start = 1
     x_end = cut_off_v_pu # cut_off_v_pu in hardcoded in the main file, but can easily be changed there.
     step_size = (x_end - x_start)/len(colorgradient)
-    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.3))
+    fig, ax = matplotlib.pyplot.subplots(figsize=(10,0.25))
     ax.set_xlim(x_start, x_end)
     ax.set_yticks([])
     matplotlib.pyplot.xlabel('Overvoltage of Bus [pu]')

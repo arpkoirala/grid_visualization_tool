@@ -24,7 +24,6 @@ ext_grid_df = pd.read_excel(pathLV+'ext_grid_df.xlsx')
 line_df = pd.read_excel(pathLV+'line_df.xlsx')
 line_df = line_df.drop(columns={'Unnamed: 0'})
 
-
 load_per_bus_df = pd.read_excel(pathLV+'load_per_bus_df.xlsx')
 
 netLV = createLVnet(bus_df, line_df, ext_grid_df, load_per_bus_df)
@@ -43,11 +42,11 @@ green_to_blue = ['#00FF00','#00FF11','#00FF22','#00FF33','#00FF44','#00FF55','#0
                 '#00FFAA','#00FFBB','#00FFCC','#00FFDD','#00FFEE','#00FFFF','#00EEFF','#00DDFF','#00CCFF','#00AAFF','#0099FF','#0088FF',
                 '#0077FF','#0066FF','#0055FF','#0044FF','#0033FF','#0022FF','#0011FF','#0000FF']
 
-cut_off_v_pu_hardcoded_undervoltage = 0.95 # cut_off_v_pu is hardcoded; below(or above) the cutt of voltage all nodes will have the same color
-cut_off_v_pu_hardcoded_overvoltage = 1.05
+cut_off_v_pu_hardcoded_undervoltage = 0.90 # cut_off_v_pu is hardcoded; below(or above) the cutt of voltage all nodes will have the same color
+cut_off_v_pu_hardcoded_overvoltage = 1.10
 
 ##############################################################
-Pandanet = netMV  # Change here to the network you want to use
+Pandanet = netLV  # Change here to the network you want to use
 ###############################################################
 
 pp.runpp(Pandanet) # run powerflow on the network
@@ -253,8 +252,8 @@ def displayHoverNodeData(data):
 
 @app.callback( 
     # displays info when hovering over a line, info stays displayed until user hovers over another line
-    Output('hover-info-line','children'),
-    Input('net map', 'mouseoverEdgeData')
+    Output(component_id='hover-info-line',component_property='children'),
+    Input(component_id='net map',component_property= 'mouseoverEdgeData')
     )
 def displayHoverEdgeData(data):
     if data:

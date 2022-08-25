@@ -48,7 +48,7 @@ Packages:
 
 TO DO:
     //// visual indication which lines have switches
-    add bus numbers 
-    add permanent voltage to certain nodes
+    //// add bus numbers 
+    //// add permanent voltage to certain nodes
     small guide on adding feautures
     snapshot

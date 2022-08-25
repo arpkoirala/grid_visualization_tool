@@ -7,7 +7,7 @@ import numpy as np
 # The selector attribute is used to select a style when generating elements
 
 
-def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2): 
+def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2,labels,perunit): 
     all_styles = [       
         
                 {
@@ -117,11 +117,19 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'line-color': 'blue',
                         'width': 2*line_size,}
                 },)
+    
+
+    content = '' # This last part is for displaying the bus-number op pu-value above the nodes
+    if labels== 'On':
+        content = 'data(id)'
+    if perunit== 'On':
+        content = 'data(pu)'
+        
     all_styles.append({
                     
                     'selector': '.labelnode',
                     'style': {
-                        'content': 'data(id)',
+                        'content': content,
                         'font-size': bus_size,
                         }
                 },)

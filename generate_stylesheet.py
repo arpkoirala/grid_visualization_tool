@@ -8,14 +8,7 @@ import numpy as np
 
 
 def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2): 
-    all_styles = [
-                {
-                    'selector': '.labelnode',
-                    'style': {
-                        'content': 'data(id)'
-                        }
-                },
-        
+    all_styles = [       
         
                 {
                     'selector': '.ext_grid', #style for nodes connected to an external grid
@@ -124,6 +117,16 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                         'line-color': 'blue',
                         'width': 2*line_size,}
                 },)
+    all_styles.append({
+                    
+                    'selector': '.labelnode',
+                    'style': {
+                        'content': 'data(id)',
+                        'font-size': bus_size,
+                        }
+                },)
+
+
     return all_styles
 
 def generate_gradient_scale_line_loading(colorgradient): 

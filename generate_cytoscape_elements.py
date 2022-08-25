@@ -9,43 +9,60 @@ def generate_nodes(pandanet,vlevel,colorgradient1,colorgradient2,v_cuttoff_under
     # the function return a list containing all nodes; this is the input of the elements-property of the network map.
     all_nodes =[] 
     ext_grid = pandanet.ext_grid.bus.values
+    if labels:
+        classes_suffix = ' labelnode'
+    else:
+        classes_suffix = ''
     if vlevel: # if vlevel is True, nodes will be colorscaled according to their vlevel
         vlevels = pandanet.res_bus.vm_pu.values
         for node in pandanet.bus.index:
-            x_coord = int(pandanet.bus_geodata.x[node]*50) # COORDINATES ARE x 10 on the network map 
-            y_coord = int(pandanet.bus_geodata.y[node]*50) # this is done because otherwise the nodes and lines are to close and it becomes impossible to select the one you want
+            classes = ''
+            x_coord = int(pandanet.bus_geodata.x[node]*10) # COORDINATES ARE x 10 on the network map 
+            y_coord = int(pandanet.bus_geodata.y[node]*10) # this is done because otherwise the nodes and lines are to close and it becomes impossible to select the one you want
             if node in ext_grid:
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid'})
+                classes='ext_grid'
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid' + classes_suffix})
             elif isnan(vlevels[node]):
                 print('bus ' + str(node) + '= nan')
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'bus-nan'})
+                classes='bus-nan'
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'bus-nan' + classes_suffix})
             else:
                 if vlevels[node] <=1:
                     diff = (1-vlevels[node])/(1 - v_cuttoff_under)*len(colorgradient1) # transformation that projects the range of undervoltage (v_cuttoff - 1) onto the amount of colors in the colorgradient
                     colorindex = floor(diff)
                     colorindex = colorindex.astype(int)
                     if colorindex < len(colorgradient1):
-                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient1[colorindex][1:]})
+                        classes = colorgradient1[colorindex][1:]
+                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient1[colorindex][1:] + classes_suffix})
                     else:
-                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient1[len(colorgradient1) -1][1:]})
+                        classes = colorgradient1[len(colorgradient1) -1][1:]
+                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient1[len(colorgradient1) -1][1:] + classes_suffix})
                 
                 else:
                     diff = (vlevels[node]-1)/(v_cuttoff_over - 1)*len(colorgradient2) # transformation that projects the range of overvoltage (v_cuttoff - 1) onto the amount of colors in the colorgradient
                     colorindex = floor(diff)
                     colorindex = colorindex.astype(int)
                     if colorindex < len(colorgradient2):
-                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient2[colorindex][1:]})  
+                        classes = colorgradient2[colorindex][1:]
+                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': colorgradient2[colorindex][1:] + classes_suffix})  
                     else:
-                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient2[len(colorgradient2) -1][1:]})
+                        classes = colorgradient2[len(colorgradient2) -1][1:]
+                        all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord},'classes': colorgradient2[len(colorgradient2) -1][1:] + classes_suffix})
                 colorindex = int()
+        # all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': classes})
+        # classes = ''
     else:
         for node in pandanet.bus.index:
             x_coord = int(pandanet.bus_geodata.x[node]*10)
             y_coord = int(pandanet.bus_geodata.y[node]*10)
             if node in ext_grid:
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid'})
+                classes = 'ext_grid'
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid' + classes_suffix})
             else:
-                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'busstandard'})
+                classes = 'busstandard'
+                all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'busstandard' + classes_suffix})
+        # all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': classes})
+        classes = ''
     return all_nodes
 
 def generate_edges(pandanet,Loading,colorgradient):
@@ -71,7 +88,8 @@ def generate_edges(pandanet,Loading,colorgradient):
                 edge_class='line-overloaded'
             else: 
                 edge_class=colorgradient[colorindex[edge]][1:] + 'line'
-            if edge not in lines_no_switch:
+            
+            if edge not in lines_no_switch and edge not in open_lines:
                 edge_class += " switch-present"
             all_edges.append({'data': {'label': str(edge), 'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': edge_class})
         return all_edges

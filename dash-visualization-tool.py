@@ -47,7 +47,7 @@ cut_off_v_pu_hardcoded_undervoltage = 0.90 # cut_off_v_pu is hardcoded; below(or
 cut_off_v_pu_hardcoded_overvoltage = 1.10
 
 ##############################################################
-Pandanet = netMV  # Change here to the network you want to use
+Pandanet = netLV  # Change here to the network you want to use
 ##############################################################
 
 pp.runpp(Pandanet) # run powerflow on the network

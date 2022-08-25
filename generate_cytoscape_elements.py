@@ -4,7 +4,7 @@ from pandapower import topology
 
 
 
-def generate_nodes(pandanet,vlevel,colorgradient1,colorgradient2,v_cuttoff_under,v_cuttoff_over):
+def generate_nodes(pandanet,vlevel,colorgradient1,colorgradient2,v_cuttoff_under,v_cuttoff_over,labels):
     # this auxilary function generates all the nodes to be displayed on the network map
     # the function return a list containing all nodes; this is the input of the elements-property of the network map.
     all_nodes =[] 
@@ -12,8 +12,8 @@ def generate_nodes(pandanet,vlevel,colorgradient1,colorgradient2,v_cuttoff_under
     if vlevel: # if vlevel is True, nodes will be colorscaled according to their vlevel
         vlevels = pandanet.res_bus.vm_pu.values
         for node in pandanet.bus.index:
-            x_coord = int(pandanet.bus_geodata.x[node]*10) # COORDINATES ARE x 10 on the network map 
-            y_coord = int(pandanet.bus_geodata.y[node]*10) # this is done because otherwise the nodes and lines are to close and it becomes impossible to select the one you want
+            x_coord = int(pandanet.bus_geodata.x[node]*50) # COORDINATES ARE x 10 on the network map 
+            y_coord = int(pandanet.bus_geodata.y[node]*50) # this is done because otherwise the nodes and lines are to close and it becomes impossible to select the one you want
             if node in ext_grid:
                 all_nodes.append({'data':{'id': str(node)}, 'position': {'x': x_coord, 'y': -y_coord}, 'classes': 'ext_grid'})
             elif isnan(vlevels[node]):
@@ -52,6 +52,7 @@ def generate_edges(pandanet,Loading,colorgradient):
     # this auxilary function generates all the liens to be displayed on the network map
     # the function return a list containing all lines; this is the input of the elements-property of the network map
     open_lines = pandanet.switch[pandanet.switch.closed == False].element.values.tolist()
+    lines_no_switch =  [x for x in pandanet.line.index if x not in pandanet.switch.element.values]
     all_edges =[]
     if Loading:
 
@@ -69,15 +70,20 @@ def generate_edges(pandanet,Loading,colorgradient):
             elif colorindex[edge] > len(colorgradient) - 1:  
                 edge_class='line-overloaded'
             else: 
-                edge_class=colorgradient[colorindex[edge]][1:] + 'line' 
+                edge_class=colorgradient[colorindex[edge]][1:] + 'line'
+            if edge not in lines_no_switch:
+                edge_class += " switch-present"
             all_edges.append({'data': {'label': str(edge), 'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': edge_class})
         return all_edges
     else:
         for edge in pandanet.line.index:
             if edge in open_lines:
-                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'open-switch'})
+                edge_class='open-switch'
             else:
-                all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': 'line-black'})
+                edge_class='line-black'
+            if edge not in lines_no_switch:
+                edge_class += " switch-present"
+            all_edges.append({'data': {'label': str(edge),'source': str(pandanet.line.from_bus[edge]), 'target': str(pandanet.line.to_bus[edge])},'selectable': True,'classes': edge_class})
         return all_edges
 
 def is_radial(net):

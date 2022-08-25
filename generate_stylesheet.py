@@ -8,7 +8,16 @@ import numpy as np
 
 
 def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2): 
-    all_styles = [{
+    all_styles = [
+                {
+                    'selector': '.labelnode',
+                    'style': {
+                        'content': 'data(id)'
+                        }
+                },
+        
+        
+                {
                     'selector': '.ext_grid', #style for nodes connected to an external grid
                     'style': {
                         'background-color': 'yellow',
@@ -24,6 +33,14 @@ def generate_stylesheet(bus_size,line_size,colorgradient1,colorgradient2):
                     'style':{
                         'line-color': 'black',
                         'width': line_size}
+                },
+                {
+                    'selector': '.switch-present',
+                    'style':{
+                        'mid-source-arrow-color': 'black',
+                        'mid-source-arrow-shape': 'diamond',
+                        'arrow-scale': line_size*0.3,
+                        }
                 },
                 {
                     'selector': '.open-switch', # style for line that are not active/ switched open

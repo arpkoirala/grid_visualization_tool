@@ -32,8 +32,9 @@ V_cut_off is also hardcoded at 0.95 and 1.05 pu
 
 a feature can be added for both of these so they can be changed via the webpage, but I didnt have enough time to implement this
 
-Python 3.10.6 64-bit
 
+Versions I was using during development:
+Python 3.10.6 64-bit
 Packages: 
     dash 2.6.0 (if using anacoda, use packages on anaconda.org, because 'conda install dash' will install the wrong version)
     dash_bootstap_components 1.2.1
@@ -45,10 +46,3 @@ Packages:
     (json 2.0.9)
     (plotly 5.9.0)
 
-
-TO DO:
-    //// visual indication which lines have switches
-    //// add bus numbers 
-    //// add permanent voltage to certain nodes
-    small guide on adding feautures
-    snapshot

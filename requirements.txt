@@ -1,0 +1,48 @@
+attrs @ file:///home/conda/feedstock_root/build_artifacts/attrs_1659291887007/work
+Brotli==1.0.9
+certifi==2022.6.15
+click==8.1.3
+colorama==0.4.5
+cycler==0.11.0
+dash==2.6.1
+dash-bootstrap-components==1.2.1
+dash-core-components==2.0.0
+dash-cytoscape==0.3.0
+dash-html-components==2.0.0
+dash-table==5.0.0
+deepdiff==5.8.1
+et-xmlfile==1.1.0
+Flask==2.2.2
+Flask-Compress==1.12
+fonttools==4.37.1
+importlib-metadata @ file:///D:/bld/importlib-metadata_1653252994979/work
+importlib-resources @ file:///home/conda/feedstock_root/build_artifacts/importlib_resources_1658604161399/work
+itsdangerous==2.1.2
+Jinja2==3.1.2
+jsonschema @ file:///home/conda/feedstock_root/build_artifacts/jsonschema-meta_1661169080001/work
+kiwisolver==1.4.4
+llvmlite==0.39.0
+MarkupSafe==2.1.1
+matplotlib==3.5.3
+networkx==2.8.6
+numba==0.56.0
+numpy==1.22.4
+openpyxl==3.0.10
+ordered-set==4.1.0
+packaging==21.3
+pandapower==2.10.1
+pandas==1.4.3
+Pillow==9.2.0
+pkgutil_resolve_name @ file:///home/conda/feedstock_root/build_artifacts/pkgutil-resolve-name_1633981968097/work
+plotly==5.10.0
+pyparsing==3.0.9
+pyrsistent @ file:///D:/bld/pyrsistent_1649013512562/work
+python-dateutil==2.8.2
+pytz==2022.2.1
+scipy==1.9.0
+six==1.16.0
+tenacity==8.0.1
+tqdm==4.64.0
+Werkzeug==2.2.2
+wincertstore==0.2
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1659400682470/work
